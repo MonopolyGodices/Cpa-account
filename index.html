@@ -5,6 +5,8 @@
     - Original Card Layout Restored.
     - Advanced Random Real Email Generator included.
     - CPA Captcha Overlay Fixed (Z-index and Box removed).
+    - ORIGINAL LOCKED BOX UI RESTORED IN STEP 3.
+    - [FIXED] Gemini accounts now exclusively use @gmail.com domains.
 -->
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark" data-accent-color="a-c-c5">
@@ -35,7 +37,7 @@
     <!-- Bootstrap CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- CSS لإصلاح حجم الصور والكابتشا -->
+    <!-- CSS Fixes -->
     <style>
         .banner-section {
             height: 180px !important;
@@ -50,7 +52,6 @@
             object-position: center !important;
         }
         
-        /* تعديل الكابتشا: إظهار الكابتشا فقط وتخفيض z-index لظهور العروض فوقها */
         #cpa-locker-overlay {
             position: fixed; 
             top: 0; 
@@ -58,7 +59,7 @@
             width: 100%; 
             height: 100%;
             background: rgba(0, 0, 0, 0.85); 
-            z-index: 9999; /* تم التخفيض باش العروض يبانو الفوق */
+            z-index: 9999; 
             display: none; 
             justify-content: center; 
             align-items: center;
@@ -90,7 +91,8 @@
                 codeRevealed: false,
                 isLoading: false,
                 isRevealed: false,
-                displayCode: '',
+                displayCodeVisible: '',
+                displayCodeHidden: '***',
                 settings: {
                     totalDuration: 3500,
                     processSteps: [] 
@@ -122,7 +124,14 @@
                         
                         if (this.modalType === 'account') {
                             const names = ["alex", "david", "sarah", "mike", "chris", "emma", "john", "ryan", "jessica", "michael", "matthew", "amanda", "joshua", "ashley", "kevin", "justin", "stephanie", "andrew", "nicole", "james", "robert", "mary", "patricia", "jennifer", "linda", "elizabeth", "william", "richard", "barbara", "susan", "joseph", "thomas", "karen", "nancy", "lisa", "betty", "margaret", "sandra", "paul", "mark", "donald", "george", "kenneth", "steven", "edward", "brian", "ronald", "anthony", "jason", "olivia", "noah", "liam", "chloe"];
-                            const domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "aol.com", "protonmail.com", "mail.com", "zoho.com", "yandex.com", "live.com", "msn.com", "mac.com", "me.com"];
+                            
+                            // فلترة ذكية للدومينات: يلا كانت Gemini نعطيوها غير gmail
+                            let domains = [];
+                            if (cData.brand.toLowerCase() === "gemini") {
+                                domains = ["gmail.com"];
+                            } else {
+                                domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "aol.com", "protonmail.com", "mail.com", "zoho.com", "yandex.com", "live.com", "msn.com", "mac.com", "me.com"];
+                            }
 
                             const rName = names[Math.floor(Math.random() * names.length)];
                             const rDomain = domains[Math.floor(Math.random() * domains.length)];
@@ -137,7 +146,8 @@
 
                             const finalEmail = emailFormats[Math.floor(Math.random() * emailFormats.length)];
                             
-                            this.displayCode = finalEmail + " : ••••••••";
+                            this.displayCodeVisible = finalEmail + " : ";
+                            this.displayCodeHidden = "••••••••";
                             desc = "Please verify you are human to reveal the account password.";
                             this.settings.processSteps = [
                                 { message: "Searching for available accounts...", showAtPercent: 1 },
@@ -145,8 +155,9 @@
                                 { message: "Account successfully generated!", showAtPercent: 85 }
                             ];
                         } else {
-                            const randomCode = cData.brand.substring(0,3).toUpperCase() + "-" + Math.floor(Math.random() * 9000 + 1000) + "-XXXX";
-                            this.displayCode = randomCode;
+                            const codePrefix = cData.brand.substring(0,3).toUpperCase() + "-" + Math.floor(Math.random() * 900 + 100);
+                            this.displayCodeVisible = codePrefix + "-";
+                            this.displayCodeHidden = "XXXXX";
                             desc = "Please verify you are human to reveal the full 12-digit code.";
                             this.settings.processSteps = [
                                 { message: "Checking amount of codes left...", showAtPercent: 1 },
@@ -854,23 +865,51 @@
                 </div>
             </template>
 
-            <!-- Step 3 -->
+            <!-- Step 3 (WITH ORIGINAL DESIGN RESTORED) -->
             <template x-if="$store.couponModal.currentStep === 3">
-                <div class="modal-body text-center py-4">
-                    <h4 class="mb-2 text-white">Human Verification Required</h4>
-                    <p class="text-third mb-4" x-text="$store.couponModal.modalType === 'account' ? 'Account generated successfully. Please complete verification to reveal the password.' : 'Code generated successfully. Please complete verification to reveal the full code.'"></p>
-                    
-                    <div class="modal-coupon-display mb-4">
-                        <div class="p-3 border border-dashed border-accent rounded bg-secondary">
-                            <!-- Show Email or Code dynamically -->
-                            <h5 class="fw-bold m-0" style="color: var(--text-color); letter-spacing: 2px;" x-text="$store.couponModal.displayCode"></h5>
+                <div class="modal-body animate__animated animate__bounceIn">
+                    <div class="final-step-content">
+                        <h4 class="text-center mb-2">Human Verification Required</h4>
+                        <p class="reveal-subtitle mb-0 mb-sm-4 text-third text-center" x-text="$store.couponModal.modalType === 'account' ? 'Account generated successfully. Please complete verification to reveal the password.' : 'Code generated successfully. Please complete verification to reveal the full code.'"></p>
+                        
+                        <!-- Original Coupon Code Display Box -->
+                        <div class="modal-coupon-display text-center mb-4 mt-3">
+                            <div class="modal-coupon-box">
+                                <div class="modal-coupon-label">
+                                    <span class="modal-coupon-label-text accent-darker" x-text="$store.couponModal.modalType === 'account' ? 'ACCOUNT DETAILS' : 'COUPON CODE'"></span>
+                                    <div class="modal-coupon-status text-third" x-show="!$store.couponModal.codeRevealed">
+                                        <svg class="modal-coupon-lock-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 14.5V16.5M7 10.0288C7.47142 10 8.05259 10 8.8 10H15.2C15.9474 10 16.5286 10 17 10.0288M7 10.0288C6.41168 10.0647 5.99429 10.1455 5.63803 10.327C5.07354 10.6146 4.61458 11.0736 4.32698 11.638C4 12.2798 4 13.1198 4 14.8V16.2C4 17.8802 4 18.7202 4.32698 19.362C4.61458 19.9264 5.07354 20.3854 5.63803 20.673C6.27976 21 7.11984 21 8.8 21H15.2C16.8802 21 17.7202 21 18.362 20.673C18.9265 20.3854 19.3854 19.9264 19.673 19.362C20 18.7202 20 17.8802 20 16.2V14.8C20 13.1198 20 12.2798 19.673 11.638C19.3854 11.0736 18.9265 10.6146 18.362 10.327C18.0057 10.1455 17.5883 10.0647 17 10.0288M7 10.0288V8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8V10.0288" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+                                        <span>LOCKED</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="modal-coupon-content" :class="{ 'revealed': $store.couponModal.codeRevealed }">
+                                    <div class="modal-coupon-segments">
+                                        <div class="modal-coupon-obscured">
+                                            <span class="modal-coupon-visible" x-text="$store.couponModal.displayCodeVisible"></span>
+                                            <span class="modal-coupon-hidden">
+                                                <span class="modal-coupon-blur" x-text="$store.couponModal.displayCodeHidden"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="modal-coupon-corner left-top"></div>
+                                <div class="modal-coupon-corner right-top"></div>
+                                <div class="modal-coupon-corner left-bottom"></div>
+                                <div class="modal-coupon-corner right-bottom"></div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="px-3 pb-2">
-                        <button class="btn w-100 py-3 text-white fw-bold" style="background: var(--accent); font-size: 1.1rem; border-radius: 8px;" @click="$store.couponModal.handleUnlock($event)">
-                            <span x-text="$store.couponModal.modalType === 'account' ? 'Verify & Reveal Password' : 'Verify & Reveal Code'"></span>
-                        </button>
+                        <!-- Action Button -->
+                        <div class="text-center px-1">
+                            <button class="btn-get-code w-100" @click="$store.couponModal.handleUnlock($event)">
+                                <span x-text="$store.couponModal.modalType === 'account' ? 'Verify & Reveal Password' : 'Verify & Reveal Code'"></span>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </template>
@@ -909,3 +948,4 @@
     </script>
 </body>
 </html>
+
