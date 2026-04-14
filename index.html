@@ -3,10 +3,9 @@
     Website Designed by CounterMind on Marketing-Rhino.com
     Modified for Static Hosting & CPA Integration (Hybrid: Accounts & Codes)
     - Original Card Layout Restored.
-    - Advanced Random Real Email Generator included.
-    - CPA Captcha Overlay Fixed (Z-index and Box removed).
-    - ORIGINAL LOCKED BOX UI RESTORED IN STEP 3.
-    - [FIXED] Gemini accounts now exclusively use @gmail.com domains.
+    - Advanced Random Real Email Generator included (Gemini = Gmail only).
+    - CPA Captcha Overlay Fixed.
+    - SMART EMAIL MASKING ADDED (e.g., joh***@gmail.com : ••••••••).
 -->
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark" data-accent-color="a-c-c5">
@@ -65,6 +64,28 @@
             align-items: center;
             backdrop-filter: blur(5px);
         }
+        
+        /* تنسيق خاص لعرض الإيميل والكود بوضوح متجاوزين الـ CSS الأصلي */
+        .clear-code-display {
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        .clear-code-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #ffffff;
+            word-break: break-all;
+            line-height: 1.6;
+        }
+        .blurred-part {
+            color: var(--accent, #ff4757);
+            filter: blur(3.5px);
+            user-select: none;
+        }
     </style>
 
     <script>
@@ -92,7 +113,7 @@
                 isLoading: false,
                 isRevealed: false,
                 displayCodeVisible: '',
-                displayCodeHidden: '***',
+                displayCodeHidden: '',
                 settings: {
                     totalDuration: 3500,
                     processSteps: [] 
@@ -146,8 +167,14 @@
 
                             const finalEmail = emailFormats[Math.floor(Math.random() * emailFormats.length)];
                             
-                            this.displayCodeVisible = finalEmail + " : ";
+                            // خوارزمية إخفاء الإيميل (مثلا: joh***@gmail.com)
+                            const [usernamePart, domainPart] = finalEmail.split('@');
+                            const visibleUsername = usernamePart.substring(0, 3); // كياخد غير 3 الحروف اللولين
+                            const maskedEmail = visibleUsername + "***@" + domainPart;
+                            
+                            this.displayCodeVisible = maskedEmail + " : ";
                             this.displayCodeHidden = "••••••••";
+                            
                             desc = "Please verify you are human to reveal the account password.";
                             this.settings.processSteps = [
                                 { message: "Searching for available accounts...", showAtPercent: 1 },
@@ -865,7 +892,7 @@
                 </div>
             </template>
 
-            <!-- Step 3 (WITH ORIGINAL DESIGN RESTORED) -->
+            <!-- Step 3 (WITH ORIGINAL DESIGN RESTORED + CLEAR VISIBILITY FIX) -->
             <template x-if="$store.couponModal.currentStep === 3">
                 <div class="modal-body animate__animated animate__bounceIn">
                     <div class="final-step-content">
@@ -885,14 +912,11 @@
                                     </div>
                                 </div>
                                 
-                                <div class="modal-coupon-content" :class="{ 'revealed': $store.couponModal.codeRevealed }">
-                                    <div class="modal-coupon-segments">
-                                        <div class="modal-coupon-obscured">
-                                            <span class="modal-coupon-visible" x-text="$store.couponModal.displayCodeVisible"></span>
-                                            <span class="modal-coupon-hidden">
-                                                <span class="modal-coupon-blur" x-text="$store.couponModal.displayCodeHidden"></span>
-                                            </span>
-                                        </div>
+                                <!-- CUSTOM CLEAR DISPLAY BYPASSING ORIGINAL CSS -->
+                                <div class="modal-coupon-content" style="background: transparent;">
+                                    <div class="clear-code-display">
+                                        <span class="clear-code-text" x-text="$store.couponModal.displayCodeVisible"></span>
+                                        <span class="clear-code-text blurred-part" x-text="$store.couponModal.displayCodeHidden"></span>
                                     </div>
                                 </div>
                                 
@@ -948,4 +972,3 @@
     </script>
 </body>
 </html>
-
