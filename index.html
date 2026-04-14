@@ -1,0 +1,775 @@
+```html
+<!--
+    Website Designed by CounterMind on Marketing-Rhino.com
+    https://www.marketing-rhino.com/
+    Modified for Static Hosting & CPA Integration
+-->
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark" data-accent-color="a-c-c5">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Home | CouponRocket</title>
+    <meta name="description" content="Find the latest coupons, discount codes, and special offers. Save money on your next purchase with verified promo codes.">
+    <meta name="base-url" content="https://wolfcoupons.com">
+    <meta name="appearance-settings" content='{"available_coupons_min":120,"available_coupons_max":550}'>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon_69c588727c8fb.png">
+    
+    <!-- سكريبت CPA الخاص بك -->
+    <script type="text/javascript" src="https://appchecker.space/cp/js/4wy1r"></script>
+
+    <script>
+        if (localStorage.getItem('user_color_mode')) {
+            document.documentElement.setAttribute('data-bs-theme', 
+                localStorage.getItem('user_color_mode')
+            );
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    
+    <script>
+        function getCouponFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('coupon');
+        }
+        
+        window.revealFullCode = function() {
+            const modalStore = Alpine.store('couponModal');
+            if (modalStore) {
+                modalStore.completeUnlock();
+            }
+        };
+        
+        function safeDecodeUrl(url) {
+            if (!url) return '';
+            try {
+                return decodeURIComponent(url);
+            } catch (e) {
+                return url;
+            }
+        }
+        
+        document.addEventListener('alpine:init', () => {
+
+            const setModalHeight = () => {
+                if (window.innerWidth < 768) {
+                    const vh = window.innerHeight * 0.01;
+                    document.documentElement.style.setProperty('--vh', `${vh}px`);
+                }
+            };
+
+            setModalHeight();
+            window.addEventListener('resize', setModalHeight);
+            window.addEventListener('orientationchange', () => {
+                setTimeout(setModalHeight, 100);
+            });
+
+            Alpine.store('couponModal', {
+                isOpen: false,
+                coupon: null,
+                baseUrl: '',
+                usesToday: 0,
+                currentStep: 1,
+                processingProgress: 0,
+                currentMessage: '',
+                showCheckmark: false,
+                codeRevealed: false,
+                isLoading: false,
+                isRevealed: false,
+                settings: {
+                    totalDuration: 3500, // مدة التحميل
+                    processSteps: [
+                        { message: "Checking amount of coupons left...", showAtPercent: 1 },
+                        { message: "Checking coupon code validity...", showAtPercent: 35 },
+                        { message: "Coupon is valid!", showAtPercent: 85 }
+                    ],
+                    locker: {
+                        enable_locker: true,
+                        unlock_method: "timer",
+                        unlock_delay: 3600
+                    },
+                    appearance: {
+                        show_ratings: true,
+                        show_random_uses: true,
+                        show_available_coupons: true
+                    }
+                },
+                translations: {
+                    expiresIn: "Expires in"
+                },
+                
+                init() {
+                    window.addEventListener('orientationchange', () => {
+                        if (this.isOpen) {
+                            setTimeout(setViewportHeight, 100);
+                        }
+                    });
+                },
+
+                // تعديل الدالة لتعمل بدون سيرفر (بدون Fetch API)
+                async open(couponId) {
+                    try {
+                        this.isOpen = true;
+                        
+                        const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+                        document.body.classList.add('modal-open');
+                        document.body.style.top = `-${scrollPos}px`;
+                        document.body.style.width = '100%';
+                        
+                        // قاعدة بيانات وهمية للكوبونات لتعمل أوفلاين
+                        const mockDatabase = {
+                            31: { brand: "Resident Evil", title: "Resident Evil Requiem Full Game Code" },
+                            30: { brand: "Poppy Playtime", title: "Poppy Playtime Chapter 5 Full Game Code" },
+                            29: { brand: "NBA 2K26", title: "NBA 2K26 Unlimited VC Code" },
+                            28: { brand: "Spotify", title: "Spotify Premium 12 Month Code" },
+                            27: { brand: "Netflix", title: "Netflix 12 Month Code For free" },
+                            26: { brand: "PlayStation", title: "PS Plus 12 Month Code for Free" },
+                            24: { brand: "Xbox", title: "Xbox Game Pass 12 Month Code for Free" },
+                            23: { brand: "Gemini", title: "Gemini Pro for Free (12 Months Code)" },
+                            22: { brand: "ChatGPT", title: "ChatGPT Premium for Free (12 Month Code)" }
+                        };
+
+                        const cData = mockDatabase[couponId] || { brand: "Premium", title: "Premium Code For Free" };
+                        const randomCode = cData.brand.substring(0,3).toUpperCase() + "-" + Math.floor(Math.random() * 9000 + 1000) + "-XXXX";
+
+                        // تجهيز بيانات الكوبون
+                        this.coupon = {
+                            id: couponId,
+                            brand_name: cData.brand,
+                            coupon_title: cData.title,
+                            coupon_code: randomCode,
+                            coupon_rating: "5.0",
+                            coupon_rating_count: Math.floor(Math.random() * 800) + 100,
+                            coupon_validity: "Expires in " + (Math.floor(Math.random() * 100) + 10) + " Days",
+                            coupon_description: "Please verify you are human to reveal the full 12-digit code.",
+                            coupon_short_incent: "FREE",
+                            url_type: "locker"
+                        };
+                        
+                        this.usesToday = Math.floor(Math.random() * 50) + 20;
+                        this.scrollPosition = scrollPos;
+                        
+                        const modalOverlay = document.querySelector('.modal-overlay');
+                        if (modalOverlay) modalOverlay.removeAttribute('closing');
+                        
+                        return false;
+                    } catch (error) {
+                        console.error('Error:', error);
+                        this.isOpen = false;
+                        document.body.classList.remove('modal-open');
+                    }
+                },
+
+                close() {
+                    const modalOverlay = document.querySelector('.modal-overlay');
+                    const isMobile = window.innerWidth <= 768;
+                    if (isMobile) {
+                        modalOverlay.setAttribute('closing', '');
+                        setTimeout(() => { this.closeModal(modalOverlay); }, 240);
+                    } else {
+                        this.closeModal(modalOverlay);
+                    }
+                },
+
+                closeModal(modalOverlay) {
+                    modalOverlay?.removeAttribute('closing');
+                    const scrollPos = Math.abs(parseInt(document.body.style.top || '0'));
+                    
+                    document.body.classList.remove('modal-open');
+                    document.body.style.position = '';
+                    document.body.style.width = '';
+                    document.body.style.top = '';
+                    
+                    document.documentElement.style.scrollBehavior = 'auto';
+                    document.documentElement.scrollTop = scrollPos;
+                    document.body.scrollTop = scrollPos;
+                    document.documentElement.style.scrollBehavior = '';
+                    
+                    this.isOpen = false;
+                    this.copyStatus = 'ready';
+                    this.currentStep = 1;
+                    this.processingProgress = 0;
+                    this.currentMessage = '';
+                    this.showCheckmark = false;
+                    this.codeRevealed = false;
+                    this.isLoading = false;
+                    this.isRevealed = false;
+                    this.coupon = null;
+                    
+                    // إخفاء نافذة الـ CPA في حالة كانت مفتوحة
+                    document.getElementById('cpa-locker-overlay').style.display = 'none';
+                },
+
+                hideCode(code) { return code ? code.substring(0, 3) + '***' : ''; },
+                formatExpiry(validityDate) { return validityDate || "No expiration"; },
+                formatTitle(title) { return title; },
+                formatIncentive(inc) { return inc; },
+                formatBrandName(name) { return name; },
+                formatDescription(desc) { return desc; },
+                
+                formatCode(code) {
+                    if (!code) return '';
+                    const visiblePart = code.slice(-4);
+                    const hiddenPart = '•'.repeat(Math.max(code.length - 4, 4));
+                    return hiddenPart + visiblePart;
+                },
+                
+                formatPartialCode(code) {
+                    if (!code) return '';
+                    const visiblePart = code.slice(0, 4);
+                    const hiddenPart = '•'.repeat(4);
+                    return visiblePart + hiddenPart;
+                },   
+                
+                async showStep2() {
+                    this.currentStep = 2;
+                    this.processingProgress = 0;
+                    this.currentMessage = '';
+                    this.showCheckmark = false;
+                    
+                    const startTime = performance.now();
+                    
+                    const animate = (currentTime) => {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / this.settings.totalDuration, 1);
+                        
+                        const eased = this.easeInOutCubic(progress);
+                        this.processingProgress = eased * 100;
+                        
+                        for (const step of this.settings.processSteps) {
+                            if (this.processingProgress >= step.showAtPercent) {
+                                this.currentMessage = step.message;
+                            }
+                        }
+
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            this.showCheckmark = true;
+                            setTimeout(() => this.showStep3(), 1500);
+                        }
+                    };
+                    requestAnimationFrame(animate);
+                },
+
+                showStep3() {
+                    this.currentStep = 3;
+                },
+        
+                easeInOutCubic(x) {
+                    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+                },
+                
+                completeUnlock() {
+                    this.codeRevealed = true;
+                    this.isLoading = false;
+                    this.isRevealed = true;
+                    document.getElementById('cpa-locker-overlay').style.display = 'none';
+                },
+                
+                // دالة إظهار الـ CPA Locker
+                handleUnlock(event) {
+                    // إظهار النافذة التي تحتوي على عنصر الـ Captcha الخاص بك
+                    document.getElementById('cpa-locker-overlay').style.display = 'flex';
+                },
+
+                revealCode() {
+                    this.codeRevealed = true;
+                },
+
+                async copyCode() {
+                    try {
+                        if (!this.codeRevealed) return;
+                        if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(this.coupon.coupon_code);
+                            this.copyStatus = 'copied';
+                        } else {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = this.coupon.coupon_code;
+                            textArea.style.position = 'fixed';
+                            textArea.style.left = '-999999px';
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            document.execCommand('copy');
+                            textArea.remove();
+                            this.copyStatus = 'copied';
+                        }
+                        setTimeout(() => {
+                            this.copyStatus = 'ready';
+                        }, 2000);
+                    } catch (err) {}
+                }
+            });
+        });
+    </script>
+    
+    <script defer="" src="js/cdn.min.js"></script>
+    <link href="css/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/swiper-bundle.min.css">
+    <link rel="stylesheet" href="css/magnific-popup.min.css">
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/utility.css">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* ستايل إضافي لنافذة الـ CPA */
+        #cpa-locker-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .cpa-locker-box {
+            background: var(--background-secondary, #1e1e1e);
+            border: 1px solid var(--accent, #ff4757);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="theme-dark dark-mode bg text">
+    <!-- Header -->
+    <header class="header d-flex align-items-center justify-content-center bg border-b border-light">
+        <nav class="navbar navbar-expand w-100">
+            <div class="container container-2xl">
+                <div class="d-flex align-items-center w-100 gap-3">
+                    <a class="navbar-brand p-0 flex-shrink-0" href="#">
+                        <img src="images/logo_light_69c587aca8bb8.png" class="theme-logo" data-light-src="images/logo_light_69c587aca8bb8.png" data-dark-src="images/logo_light_69c587aca8bb8.png" alt="Logo" height="28">
+                    </a>
+                    <form class="d-flex position-relative flex-grow-1" role="search" id="searchForm">
+                        <div class="input-group">
+                            <input type="search" name="q" class="form-control header-search text-third rounded-3 bg-secondary border border-subtle" placeholder="Search coupons & brands" id="searchInput" autocomplete="off">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </nav>    
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+        <aside class="sidebar pt-4 pt-sm-5 bg-secondary border-r border-light">
+            <section class="featured-section px-xl-3 px-2 mb-sm-5 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="h5 mb-0 fw-300">Featured Deals</h3>
+                    <div class="swiper-navigation d-flex gap-2">
+                        <button class="btn btn-outline-primary featured-prev btn-sm text border border-accent hover:bg-accent hover:text-white"><i class="bi bi-chevron-left"></i></button>
+                        <button class="btn btn-outline-primary btn-sm featured-next text btn-sm border border-accent hover:bg-accent hover:text-white"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                </div>            
+                <div class="swiper featured-swiper">
+                    <div class="swiper-wrapper">
+                        <!-- Featured 1 -->
+                        <div class="swiper-slide">
+                            <div class="featured-coupon-card bg border border-light hover:border-accent rounded-4 position-relative overflow-hidden">
+                                <div class="featured-media">
+                                    <img src="images/coupon_24_f08525d5ac33b4fe.webp" class="featured-banner" alt="Xbox">
+                                    <div class="featured-badge bg-accent text-white px-3 py-1 position-absolute top-0 end-0 m-3 rounded-pill"><small class="fw-500">Coupon</small></div>
+                                </div>
+                                <div class="featured-content">
+                                    <h3 class="featured-title fw-600 mb-2">Xbox Game Pass 12 Month Code for Free</h3>
+                                    <p class="featured-description text-third mb-3 small">Xbox Pass For Free (12 Months Code)</p>
+                                    <div class="featured-incentive bg-secondary border border-light rounded-3 p-2 text-center mb-3"><span class="accent fw-600">FREE</span></div>
+                                    <div x-data=""> 
+                                        <button @click.prevent="$store.couponModal.open(24);" class="featured-action-btn btn w-100 border border-accent hover:bg-accent hover:text-white mt-3">Get Code <i class="bi bi-arrow-right ms-2"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Featured 2 -->
+                        <div class="swiper-slide">
+                            <div class="featured-coupon-card bg border border-light hover:border-accent rounded-4 position-relative overflow-hidden">
+                                <div class="featured-media">
+                                    <img src="images/coupon_26_977d10717feccec1.jpg" class="featured-banner" alt="PS Plus">
+                                </div>
+                                <div class="featured-content">
+                                    <h3 class="featured-title fw-600 mb-2">PS Plus 12 Month Code for Free</h3>
+                                    <p class="featured-description text-third mb-3 small">PS Plus Code For Free (12 Months Code)</p>
+                                    <div class="featured-incentive bg-secondary border border-light rounded-3 p-2 text-center mb-3"><span class="accent fw-600">FREE</span></div>
+                                    <div x-data=""> 
+                                        <button @click.prevent="$store.couponModal.open(26);" class="featured-action-btn btn w-100 border border-accent hover:bg-accent hover:text-white mt-3">Get Code <i class="bi bi-arrow-right ms-2"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Featured 3 -->
+                        <div class="swiper-slide">
+                            <div class="featured-coupon-card bg border border-light hover:border-accent rounded-4 position-relative overflow-hidden">
+                                <div class="featured-media">
+                                    <img src="images/coupon_27_05718d9ce9eecf00.jpg" class="featured-banner" alt="Netflix">
+                                    <div class="featured-badge bg-accent text-white px-3 py-1 position-absolute top-0 end-0 m-3 rounded-pill"><small class="fw-500">Coupon</small></div>
+                                </div>
+                                <div class="featured-content">
+                                    <h3 class="featured-title fw-600 mb-2">Netflix 12 Month Code For free</h3>
+                                    <p class="featured-description text-third mb-3 small">Netflix Code For free (12 Months)</p>
+                                    <div class="featured-incentive bg-secondary border border-light rounded-3 p-2 text-center mb-3"><span class="accent fw-600">FREE</span></div>
+                                    <div x-data=""> 
+                                        <button @click.prevent="$store.couponModal.open(27);" class="featured-action-btn btn w-100 border border-accent hover:bg-accent hover:text-white mt-3">Get Code <i class="bi bi-arrow-right ms-2"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content px-xl-5 px-2 py-sm-5 py-4">
+            <section class="all-coupons-section">
+                <h2 class="h3 mb-sm-4 mb-3 fw-300">All Coupons</h2>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-xl-4 g-3">
+                    
+                    <!-- Coupon 31 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_31_c6f9733904db98d3.jpg" class="card-img-top banner-image" alt="Resident Evil">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Resident Evil Requiem Full Game Code for Free</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(31);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                                <div class="hidden-code bg-secondary rounded-2">
+                                                    <div class="code-content"><span class="code-text fw-600">XCXC2XC52...</span></div>
+                                                    <div class="code-overlay"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon 30 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_30_6afb1c37c51046b6.jpg" class="card-img-top banner-image" alt="Poppy Playtime">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Poppy Playtime Chapter 5 Full Game Code</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(30);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                                <div class="hidden-code bg-secondary rounded-2">
+                                                    <div class="code-content"><span class="code-text fw-600">DACSXA...</span></div>
+                                                    <div class="code-overlay"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon 29 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_29_1bb99c0eb895e59e.jpg" class="card-img-top banner-image" alt="NBA 2K26">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">NBA 2K26 Unlimited VC Code</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(29);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon 28 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_28_683ef0440fb0caaf.jpg" class="card-img-top banner-image" alt="Spotify">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Spotify Premium 12 Month Code For Free</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(28);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon 27 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_27_05718d9ce9eecf00.jpg" class="card-img-top banner-image" alt="Netflix">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Netflix 12 Month Code For free</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(27);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon 26 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_26_977d10717feccec1.jpg" class="card-img-top banner-image" alt="PS Plus">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">PS Plus 12 Month Code for Free</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(26);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon 24 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_24_f08525d5ac33b4fe.webp" class="card-img-top banner-image" alt="Xbox">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Xbox Game Pass 12 Month Code for Free</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(24);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon 23 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_23_2dfa293f98b34baf.png" class="card-img-top banner-image" alt="Gemini">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Gemini Pro for Free (12 Months Code)</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(23);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coupon 22 -->
+                    <div class="col">
+                        <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
+                            <div class="banner-section position-relative">
+                                <img src="images/coupon_22_64dedc8948114769.png" class="card-img-top banner-image" alt="ChatGPT">
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">ChatGPT Premium for Free (12 Month Code)</h3></div>
+                                    <div x-data="">
+                                        <div class="coupon-action mt-auto">
+                                            <div class="code-preview-wrapper">
+                                                <button @click.prevent="$store.couponModal.open(22);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
+                                                    <i class="bi bi-scissors"></i> Get Code                                
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- النافذة المنبثقة (Modal) -->
+    <div x-cloak="" x-data="" x-show="$store.couponModal.isOpen" class="modal-overlay">
+        <div class="coupon-modal" x-show="$store.couponModal.coupon">
+            <!-- Header -->
+            <div class="modal-header position-relative overflow-hidden bg-secondary">
+                <div class="w-100 z-1 header-m-con p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div>
+                                <span class="brand-name mb-1 small primary-lightest" x-text="$store.couponModal.coupon.brand_name"></span>
+                                <h6 class="coupon-title mb-1 text-white fw-600" x-text="$store.couponModal.coupon.coupon_title"></h6>
+                            </div>
+                        </div>
+                        <button @click="$store.couponModal.close()" x-show="$store.couponModal.currentStep === 1" class="btn-close btn-modal-close bg-white bg-opacity-10 text-white position-relative z-1">
+                            <svg width="22px" height="22px" viewBox="0 0 24 24" fill="none"><path d="M16 8L8 16M8 8L16 16" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body - Step 1 -->
+            <template x-if="$store.couponModal.currentStep === 1">
+                <div>
+                    <div class="modal-body mb-s1 text-center">
+                        <h4 class="mb-3">Ready to unlock?</h4>
+                        <p class="text-third" x-text="$store.couponModal.coupon.coupon_description"></p>
+                    </div>
+                    <div class="modal-footer d-flex align-items-center justify-content-center">
+                        <div class="cr-button-wrapper w-100 px-3">
+                            <a class="modal-btn-reveal text-center w-100" href="#" @click.prevent="$store.couponModal.showStep2()" style="display: block; padding: 15px; background: var(--accent); color: white; border-radius: 8px; font-weight: bold; text-decoration: none;">
+                                Show Full Code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Body - Step 2 (Loading) -->
+            <template x-if="$store.couponModal.currentStep === 2">
+                <div class="modal-body animate__animated animate__bounceIn text-center py-5">
+                    <div class="spinner-border text-accent mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+                    <h5 x-text="$store.couponModal.currentMessage" class="text-white"></h5>
+                    <div class="progress mt-4" style="height: 10px; border-radius: 5px; background-color: var(--background-secondary);">
+                        <div class="progress-bar" role="progressbar" :style="`width: ${$store.couponModal.processingProgress}%; background-color: var(--accent);`"></div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Body - Step 3 (CPA Trigger) -->
+            <template x-if="$store.couponModal.currentStep === 3">
+                <div class="modal-body animate__animated animate__bounceIn text-center py-4">
+                    <h4 class="mb-2 text-white">Verification Required</h4>
+                    <p class="text-third mb-4">Code generated successfully. Please verify to reveal.</p>
+                    
+                    <div class="modal-coupon-display mb-4">
+                        <div class="p-3 border border-dashed border-accent rounded bg-secondary">
+                            <h3 class="fw-bold m-0" style="letter-spacing: 3px; color: var(--text-color);" x-text="$store.couponModal.formatPartialCode($store.couponModal.coupon.coupon_code)"></h3>
+                        </div>
+                    </div>
+
+                    <div class="px-3 pb-3">
+                        <button class="btn w-100 py-3" style="background-color: var(--accent); color: white; font-weight: bold; font-size: 1.1rem; border-radius: 8px;" @click="$store.couponModal.handleUnlock($event)">
+                            Verify & Unlock Code
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- نافذة قفل الـ CPA (CPA Locker Overlay) -->
+    <!-- هاد النافذة كتبقى مخبية حتى كيكليكي الزائر على زر التحقق فالخطوة 3 -->
+    <div id="cpa-locker-overlay">
+        <div class="cpa-locker-box">
+            <h4 class="text-white mb-2 fw-bold">Human Verification</h4>
+            <p class="text-third mb-4 small">Please complete the captcha below to prove you are a human and reveal your code.</p>
+            
+            <!-- هادا هو الكود لي عطيتيني ديال الكابتشا CPA -->
+            <div data-captcha-enable="true"></div>
+            
+            <button onclick="document.getElementById('cpa-locker-overlay').style.display='none'" class="btn btn-outline-secondary mt-4 w-100">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/swiper-bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const featuredSwiper = new Swiper('.featured-swiper', {
+                slidesPerView: 1,
+                spaceBetween: 12,
+                loop: true,
+                slideToClickedSlide: true,
+                navigation: {
+                    nextEl: '.featured-next',
+                    prevEl: '.featured-prev',
+                },
+                breakpoints: {
+                    576: { slidesPerView: 2 },
+                    992: { slidesPerView: 2 },
+                    1200: { slidesPerView: 1 },
+                },
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+```
