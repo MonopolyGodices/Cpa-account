@@ -3,6 +3,8 @@
     Website Designed by CounterMind on Marketing-Rhino.com
     Modified for Static Hosting & CPA Integration (Hybrid: Accounts & Codes)
     - Advanced Random Real Email Generator included.
+    - Original Image Sizes Restored.
+    - Added Ratings, Descriptions, and User Counts.
 -->
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark" data-accent-color="a-c-c5">
@@ -49,7 +51,7 @@
             Alpine.store('couponModal', {
                 isOpen: false,
                 coupon: null,
-                modalType: 'coupon', // 'account' or 'coupon'
+                modalType: 'coupon',
                 currentStep: 1,
                 processingProgress: 0,
                 currentMessage: '',
@@ -70,12 +72,11 @@
                         this.isOpen = true;
                         document.body.classList.add('modal-open');
                         
-                        // Hybrid Database
                         const mockDatabase = {
                             31: { brand: "Resident Evil", title: "Resident Evil Requiem Full Game Code", type: "coupon" },
                             30: { brand: "Poppy Playtime", title: "Poppy Playtime Chapter 5 Full Game Code", type: "coupon" },
                             29: { brand: "NBA 2K26", title: "NBA 2K26 Unlimited VC Code", type: "coupon" },
-                            28: { brand: "Spotify", title: "Spotify Premium 12 Month Code", type: "coupon" },
+                            28: { brand: "Spotify", title: "Spotify Premium 12 Month Account", type: "account" },
                             27: { brand: "Netflix", title: "Netflix Premium 12 Month Account", type: "account" },
                             26: { brand: "PlayStation", title: "PS Plus 12 Month Code", type: "coupon" },
                             24: { brand: "Xbox", title: "Xbox Game Pass 12 Month Code", type: "coupon" },
@@ -89,17 +90,13 @@
                         let desc = "";
                         
                         if (this.modalType === 'account') {
-                            // قائمة أسماء أجنبية حقيقية وأكثر شيوعا
                             const names = ["alex", "david", "sarah", "mike", "chris", "emma", "john", "ryan", "jessica", "michael", "matthew", "amanda", "joshua", "ashley", "kevin", "justin", "stephanie", "andrew", "nicole", "james", "robert", "mary", "patricia", "jennifer", "linda", "elizabeth", "william", "richard", "barbara", "susan", "joseph", "thomas", "karen", "nancy", "lisa", "betty", "margaret", "sandra", "paul", "mark", "donald", "george", "kenneth", "steven", "edward", "brian", "ronald", "anthony", "jason", "olivia", "noah", "liam", "chloe"];
-                            
-                            // قائمة الدومينات الحقيقية المختلفة
                             const domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "aol.com", "protonmail.com", "mail.com", "zoho.com", "yandex.com", "live.com", "msn.com", "mac.com", "me.com"];
 
                             const rName = names[Math.floor(Math.random() * names.length)];
                             const rDomain = domains[Math.floor(Math.random() * domains.length)];
                             const randNum = Math.floor(Math.random() * 9999);
 
-                            // تنسيقات مختلفة للإيميل باش يبان واقعي 100%
                             const emailFormats = [
                                 rName + randNum + "@" + rDomain,
                                 rName + "." + randNum + "@" + rDomain,
@@ -117,7 +114,6 @@
                                 { message: "Account successfully generated!", showAtPercent: 85 }
                             ];
                         } else {
-                            // توليد كود عادي بالنسبة للألعاب و Xbox
                             const randomCode = cData.brand.substring(0,3).toUpperCase() + "-" + Math.floor(Math.random() * 9000 + 1000) + "-XXXX";
                             this.displayCode = randomCode;
                             desc = "Please verify you are human to reveal the full 12-digit code.";
@@ -209,6 +205,30 @@
             border-radius: 16px; text-align: center; width: 90%; max-width: 450px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
+        .rating-badge {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 20px;
+            padding: 4px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: white;
+            font-weight: 600;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        .uses-count {
+            font-size: 0.85rem;
+            color: var(--text-third, #888);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
     </style>
 </head>
 <body class="theme-dark dark-mode bg text">
@@ -248,11 +268,14 @@
                         <div class="swiper-slide">
                             <div class="featured-coupon-card bg border border-light hover:border-accent rounded-4 position-relative overflow-hidden">
                                 <div class="featured-media">
+                                    <div class="rating-badge">⭐ 5.0</div>
                                     <img src="images/coupon_24_f08525d5ac33b4fe.webp" class="featured-banner" alt="Xbox">
                                     <div class="featured-badge bg-accent text-white px-3 py-1 position-absolute top-0 end-0 m-3 rounded-pill"><small class="fw-500">Coupon</small></div>
                                 </div>
                                 <div class="featured-content">
-                                    <h3 class="featured-title fw-600 mb-2">Xbox Game Pass 12 Month Code</h3>
+                                    <h3 class="featured-title fw-600 mb-1">Xbox Game Pass 12 Month Code</h3>
+                                    <p class="text-third small mb-2">Get 12 months of unlimited gaming with Game Pass Ultimate.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 500) + 120)</script> Uses Today</div>
                                     <div class="featured-incentive bg-secondary border border-light rounded-3 p-2 text-center mb-3"><span class="accent fw-600">FREE</span></div>
                                     <div x-data=""> 
                                         <button @click.prevent="$store.couponModal.open(24);" class="featured-action-btn btn w-100 border border-accent hover:bg-accent hover:text-white mt-3"><i class="bi bi-scissors"></i> Get Code</button>
@@ -264,10 +287,13 @@
                         <div class="swiper-slide">
                             <div class="featured-coupon-card bg border border-light hover:border-accent rounded-4 position-relative overflow-hidden">
                                 <div class="featured-media">
+                                    <div class="rating-badge">⭐ 4.9</div>
                                     <img src="images/coupon_26_977d10717feccec1.jpg" class="featured-banner" alt="PS Plus">
                                 </div>
                                 <div class="featured-content">
-                                    <h3 class="featured-title fw-600 mb-2">PS Plus 12 Month Code</h3>
+                                    <h3 class="featured-title fw-600 mb-1">PS Plus 12 Month Code</h3>
+                                    <p class="text-third small mb-2">Unlock online multiplayer and free monthly games.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 500) + 120)</script> Uses Today</div>
                                     <div class="featured-incentive bg-secondary border border-light rounded-3 p-2 text-center mb-3"><span class="accent fw-600">FREE</span></div>
                                     <div x-data=""> 
                                         <button @click.prevent="$store.couponModal.open(26);" class="featured-action-btn btn w-100 border border-accent hover:bg-accent hover:text-white mt-3"><i class="bi bi-scissors"></i> Get Code</button>
@@ -279,11 +305,14 @@
                         <div class="swiper-slide">
                             <div class="featured-coupon-card bg border border-light hover:border-accent rounded-4 position-relative overflow-hidden">
                                 <div class="featured-media">
+                                    <div class="rating-badge">⭐ 5.0</div>
                                     <img src="images/coupon_27_05718d9ce9eecf00.jpg" class="featured-banner" alt="Netflix">
                                     <div class="featured-badge bg-accent text-white px-3 py-1 position-absolute top-0 end-0 m-3 rounded-pill"><small class="fw-500">Account</small></div>
                                 </div>
                                 <div class="featured-content">
-                                    <h3 class="featured-title fw-600 mb-2">Netflix Premium 12 Month</h3>
+                                    <h3 class="featured-title fw-600 mb-1">Netflix Premium 12 Month</h3>
+                                    <p class="text-third small mb-2">Watch unlimited movies and TV shows in Ultra HD.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 500) + 120)</script> Accounts Claimed</div>
                                     <div class="featured-incentive bg-secondary border border-light rounded-3 p-2 text-center mb-3"><span class="accent fw-600">PREMIUM</span></div>
                                     <div x-data=""> 
                                         <button @click.prevent="$store.couponModal.open(27);" class="featured-action-btn btn w-100 border border-accent hover:bg-accent hover:text-white mt-3"><i class="bi bi-person-badge"></i> Get Account</button>
@@ -306,11 +335,14 @@
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 4.8</div>
                                 <img src="images/coupon_31_c6f9733904db98d3.jpg" class="card-img-top banner-image" alt="Resident Evil">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Resident Evil Requiem Full Game Code</h3></div>
+                                    <p class="text-third small mb-3">Claim your full game download code for PC and Consoles.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Uses Today</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(31);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
@@ -327,11 +359,14 @@
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 4.7</div>
                                 <img src="images/coupon_30_6afb1c37c51046b6.jpg" class="card-img-top banner-image" alt="Poppy Playtime">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Poppy Playtime Chapter 5 Full Game Code</h3></div>
+                                    <p class="text-third small mb-3">Unlock the latest chapter of the terrifying adventure.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Uses Today</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(30);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
@@ -348,11 +383,14 @@
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 4.9</div>
                                 <img src="images/coupon_29_1bb99c0eb895e59e.jpg" class="card-img-top banner-image" alt="NBA 2K26">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">NBA 2K26 Unlimited VC Code</h3></div>
+                                    <p class="text-third small mb-3">Generate unlimited VC for your MyCareer player.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Uses Today</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(29);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
@@ -365,19 +403,22 @@
                         </div>
                     </div>
 
-                    <!-- 28: Spotify (Code) -->
+                    <!-- 28: Spotify (Account) -->
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 5.0</div>
                                 <img src="images/coupon_28_683ef0440fb0caaf.jpg" class="card-img-top banner-image" alt="Spotify">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
-                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Spotify Premium 12 Month Code</h3></div>
+                                    <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Spotify Premium 12 Month</h3></div>
+                                    <p class="text-third small mb-3">Listen to music without ads and offline on any device.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Accounts Claimed</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(28);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
-                                                <i class="bi bi-scissors"></i> Get Code                                
+                                                <i class="bi bi-person-badge"></i> Get Account                                
                                             </button>
                                         </div>
                                     </div>
@@ -390,11 +431,14 @@
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 5.0</div>
                                 <img src="images/coupon_27_05718d9ce9eecf00.jpg" class="card-img-top banner-image" alt="Netflix">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Netflix Premium 12 Month</h3></div>
+                                    <p class="text-third small mb-3">Watch unlimited movies and TV shows in Ultra HD.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Accounts Claimed</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(27);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
@@ -411,11 +455,14 @@
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 4.9</div>
                                 <img src="images/coupon_26_977d10717feccec1.jpg" class="card-img-top banner-image" alt="PS Plus">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">PS Plus 12 Month Code</h3></div>
+                                    <p class="text-third small mb-3">Unlock online multiplayer and free monthly games.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Uses Today</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(26);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
@@ -432,11 +479,14 @@
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 5.0</div>
                                 <img src="images/coupon_24_f08525d5ac33b4fe.webp" class="card-img-top banner-image" alt="Xbox">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Xbox Game Pass 12 Month Code</h3></div>
+                                    <p class="text-third small mb-3">Get 12 months of unlimited gaming with Game Pass Ultimate.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Uses Today</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(24);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
@@ -453,11 +503,14 @@
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 4.9</div>
                                 <img src="images/coupon_23_2dfa293f98b34baf.png" class="card-img-top banner-image" alt="Gemini">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">Gemini Pro 12 Months</h3></div>
+                                    <p class="text-third small mb-3">Access Google's most capable AI model for creative tasks.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Accounts Claimed</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(23);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
@@ -474,11 +527,14 @@
                     <div class="col">
                         <div class="card h-100 coupon-card coupon-card-standard bg hover:bg-secondary rounded-4 border border-light transition-all">
                             <div class="banner-section position-relative">
+                                <div class="rating-badge">⭐ 5.0</div>
                                 <img src="images/coupon_22_64dedc8948114769.png" class="card-img-top banner-image" alt="ChatGPT">
                             </div>
                             <div class="card-body pt-4">
                                 <div class="d-flex flex-column h-100">
                                     <div class="mb-xl-3 mb-2"><h3 class="card-title h5 fw-600 mb-1">ChatGPT Premium 12 Month</h3></div>
+                                    <p class="text-third small mb-3">Get faster response speeds and priority access to new features.</p>
+                                    <div class="uses-count"><i class="bi bi-people-fill text-accent"></i> <script>document.write(Math.floor(Math.random() * 300) + 50)</script> Accounts Claimed</div>
                                     <div x-data="">
                                         <div class="coupon-action mt-auto">
                                             <button @click.prevent="$store.couponModal.open(22);" class="btn-reveal border-0 bg-accent text-white rounded-2 py-2 px-2 fw-500 d-flex align-items-center justify-content-center gap-2 w-100">
@@ -496,10 +552,11 @@
         </main>
     </div>
 
-    <!-- Modal Popup -->
+    <!-- Modal Popup (Dynamic for Account or Code) -->
     <div x-cloak="" x-data="" x-show="$store.couponModal.isOpen" class="modal-overlay">
         <div class="coupon-modal" x-show="$store.couponModal.coupon">
             
+            <!-- Header -->
             <div class="modal-header bg-secondary">
                 <div class="w-100 p-3">
                     <div class="d-flex align-items-center justify-content-between">
@@ -563,13 +620,13 @@
         </div>
     </div>
 
-    <!-- CPA Locker Overlay -->
+    <!-- CPA Locker Overlay (Captcha Container) -->
     <div id="cpa-locker-overlay">
         <div class="cpa-locker-box">
             <h4 class="text-white mb-2 fw-bold">Human Verification</h4>
             <p class="text-third mb-4 small">Please complete the captcha below to prove you are human and reveal your reward.</p>
             
-            <!-- CAPTCHA -->
+            <!-- CAPTCHA CPA SCRIPT DIV -->
             <div data-captcha-enable="true"></div>
             
             <button onclick="document.getElementById('cpa-locker-overlay').style.display='none'" class="btn btn-outline-secondary mt-4 w-100">Cancel</button>
