@@ -3,8 +3,8 @@
     Website Designed by CounterMind on Marketing-Rhino.com
     Modified for Static Hosting & CPA Integration (Hybrid: Accounts & Codes)
     - Original Card Layout Restored.
-    - Image Aspect Ratio Fixed (Full Cards).
     - Advanced Random Real Email Generator included.
+    - CPA Captcha Overlay Fixed (Z-index and Box removed).
 -->
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark" data-accent-color="a-c-c5">
@@ -35,10 +35,10 @@
     <!-- Bootstrap CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- CSS لإصلاح حجم الصور وجعلها بطاقات كاملة -->
+    <!-- CSS لإصلاح حجم الصور والكابتشا -->
     <style>
         .banner-section {
-            height: 180px !important; /* توحيد الطول لجميع البطاقات */
+            height: 180px !important;
             width: 100%;
             overflow: hidden;
             position: relative;
@@ -46,21 +46,23 @@
         .banner-image {
             width: 100% !important;
             height: 100% !important;
-            object-fit: cover !important; /* تغطية المساحة بالكامل */
+            object-fit: cover !important;
             object-position: center !important;
         }
         
+        /* تعديل الكابتشا: إظهار الكابتشا فقط وتخفيض z-index لظهور العروض فوقها */
         #cpa-locker-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); z-index: 999999;
-            display: none; justify-content: center; align-items: center;
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85); 
+            z-index: 9999; /* تم التخفيض باش العروض يبانو الفوق */
+            display: none; 
+            justify-content: center; 
+            align-items: center;
             backdrop-filter: blur(5px);
-        }
-        .cpa-locker-box {
-            background: var(--background-secondary, #1e1e1e);
-            border: 1px solid var(--accent, #ff4757); padding: 30px;
-            border-radius: 16px; text-align: center; width: 90%; max-width: 450px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
     </style>
 
@@ -80,7 +82,7 @@
             Alpine.store('couponModal', {
                 isOpen: false,
                 coupon: null,
-                modalType: 'coupon', // 'account' or 'coupon'
+                modalType: 'coupon',
                 currentStep: 1,
                 processingProgress: 0,
                 currentMessage: '',
@@ -101,7 +103,6 @@
                         this.isOpen = true;
                         document.body.classList.add('modal-open');
                         
-                        // Hybrid Database
                         const mockDatabase = {
                             31: { brand: "Resident Evil", title: "Resident Evil Requiem Full Game Code", type: "coupon" },
                             30: { brand: "Poppy Playtime", title: "Poppy Playtime Chapter 5 Full Game Code", type: "coupon" },
@@ -876,17 +877,10 @@
         </div>
     </div>
 
-    <!-- CPA Locker Overlay (Captcha Container) -->
+    <!-- CPA Locker Overlay (فقط الكابتشا) -->
     <div id="cpa-locker-overlay">
-        <div class="cpa-locker-box">
-            <h4 class="text-white mb-2 fw-bold">Human Verification</h4>
-            <p class="text-third mb-4 small">Please complete the captcha below to prove you are human and reveal your reward.</p>
-            
-            <!-- CAPTCHA CPA SCRIPT DIV -->
-            <div data-captcha-enable="true"></div>
-            
-            <button onclick="document.getElementById('cpa-locker-overlay').style.display='none'" class="btn btn-outline-secondary mt-4 w-100">Cancel</button>
-        </div>
+        <!-- CAPTCHA CPA SCRIPT DIV -->
+        <div data-captcha-enable="true"></div>
     </div>
 
     <!-- Scripts -->
